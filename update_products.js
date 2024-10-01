@@ -128,7 +128,7 @@ const updateInventoryQuantityAndCost = async (sku, newQty, newCost) => {
             if (updateResponse.inventoryItemUpdate.userErrors.length > 0) {
                 console.log(`User Errors:`, updateResponse.inventoryItemUpdate.userErrors);
             } else {
-                console.log(`Updated Inventory Item for SKU ${sku}:`, updateResponse.inventoryItemUpdate.inventoryItem);
+                console.log(`Updated Inventory Item`);
             }
 
             if (inventoryLevels.length >= 3) {
