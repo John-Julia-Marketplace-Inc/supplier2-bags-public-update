@@ -1,0 +1,46 @@
+name: Update pipeline
+
+on:
+  workflow_dispatch:  
+  repository_dispatch:
+    types: [shopify_steps_bags_all]
+
+  push:
+    branches:
+      - main 
+
+jobs:
+  trigger-public-workflow:
+    runs-on: ubuntu-latest
+
+    permissions:
+        contents: write  
+        packages: write  
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+    
+      - name: Pull Private Repository
+        run: |
+          git clone https://${{ secrets.PRIVATE_REPO_PAT }}@github.com/${{ secrets.PRIVATE_REPO_URL}}.git private_repo
+    
+      - name: Set up environment and run script with secrets
+        run: |
+            echo "Setting up environment variables"
+        env:
+            API_KEY: ${{ secrets.API_KEY }}
+            API_SECRET_KEY: ${{ secrets.API_SECRET_KEY }}
+            SHOP: ${{ secrets.SHOP }}
+            SHOPIFY_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ACCESS_TOKEN }}
+
+      # Step 3: Run the data preprocessing script in the cloned private repo
+      - name: Install Node.js dependencies 
+        run: npm install axios csv-parser dotenv shopify-api-node fs
+        
+      - name: Check existing SKUs
+        run: node /home/runner/work/supplier2-bags-public-update/supplier2-bags-public-update/update_products.js
+        env:
+          SHOP: ${{ secrets.SHOP }}
+          SHOPIFY_ACCESS_TOKEN: ${{ secrets.SHOPIFY_ACCESS_TOKEN }}
+      
