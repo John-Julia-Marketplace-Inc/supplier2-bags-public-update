@@ -29,7 +29,7 @@ async function fetch_csv_products() {
     const products = [];
     try {
         await pipeline(
-            fs.createReadStream('private_repo/clean_data/cleaned_data.csv'),
+            fs.createReadStream('private_repo/clean_data/to_update.csv'),
             csv(),
             new stream.Writable({
                 objectMode: true,
