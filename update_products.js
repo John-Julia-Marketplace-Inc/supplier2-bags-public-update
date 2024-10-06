@@ -91,15 +91,6 @@ const updateInventoryQuantityAndCost = async (sku, newQty, newCost) => {
             const inventoryItemId = variant.inventoryItem.id;
             const inventoryLevels = variant.inventoryItem.inventoryLevels.edges;
 
-            // Log the current cost
-            const currentCost = variant.inventoryItem.unitCost;
-            if (currentCost) {
-                console.log('Current cost found!')
-                // console.log(`Current Cost: ${currentCost.amount} ${currentCost.currencyCode}`);
-            } else {
-                console.log('No existing cost found.');
-            }
-
             // Update the inventory item cost
             const updateInventoryMutation = `
             mutation inventoryItemUpdate($id: ID!, $input: InventoryItemUpdateInput!) {
@@ -127,8 +118,6 @@ const updateInventoryQuantityAndCost = async (sku, newQty, newCost) => {
             const updateResponse = await shopify.graphql(updateInventoryMutation, variables);
             if (updateResponse.inventoryItemUpdate.userErrors.length > 0) {
                 console.log(`User Errors:`, updateResponse.inventoryItemUpdate.userErrors);
-            } else {
-                console.log(`Updated Inventory Item`);
             }
 
             if (inventoryLevels.length >= 3) {
@@ -184,29 +173,21 @@ const updateInventoryQuantityAndCost = async (sku, newQty, newCost) => {
                         delta: newDelta
                     };
     
-                    const inventoryLevelResponse = await shopify.graphql(updateInventoryLevelMutation, inventoryLevelVariables);
-                    if (inventoryLevelResponse.inventoryAdjustQuantity.userErrors.length > 0) {
-                        console.log(`Inventory Level Update Errors:`, inventoryLevelResponse.inventoryAdjustQuantity.userErrors);
-                    } else {
-                        console.log('Updated inventory!')
-                        // console.log(`Updated Inventory for Location ID ${inventoryLevel.node.location.id} to ${inventoryLevelResponse.inventoryAdjustQuantity.inventoryLevel.available}.`);
-                    }
+                    await shopify.graphql(updateInventoryLevelMutation, inventoryLevelVariables);
                 } else {
                     console.log('Not enough locations available to update inventory.');
-                    return sku
+                    return
                 }
             }
 
-        } else {
-            console.log(`SKU ${sku} not found or has no variants.`);
-        }
+        } 
 
     } catch (error) {
         if (error.extensions && error.extensions.code === 'THROTTLED') {
             await handleRateLimit(error);
             return updateInventoryQuantityAndCost(sku, newQty, newCost); // Retry after waiting
         } else {
-            console.error(`Error updating SKU ${sku}:`, error);
+            console.error(`Error updating SKU product`, error);
         }
     }
     console.log('\n=========\n');
